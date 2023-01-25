@@ -1,0 +1,6 @@
+node_modules
+sound_files
+tmp
+service_account.json
+.env
+.DS_Store
