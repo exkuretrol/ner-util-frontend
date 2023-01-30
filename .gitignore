@@ -4,3 +4,4 @@ tmp
 service_account.json
 .env
 .DS_Store
+.vscode
