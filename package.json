@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "start": "nodemon index.js",
+    "tailwind:css": "postcss public/css/tailwind.css -o public/css/style.css"
   },
   "keywords": [],
   "type": "module",
@@ -23,9 +24,16 @@
     "twig": "^1.15.4"
   },
   "nodemonConfig": {
-    "ext": "twig,html,js"
+    "ext": "twig,html,js",
+    "events": {
+      "restart": "npm run tailwind:css"
+    }
   },
   "devDependencies": {
-    "prettier-plugin-tailwindcss": "^0.2.1"
+    "autoprefixer": "^10.4.13",
+    "postcss": "^8.4.21",
+    "postcss-cli": "^10.1.0",
+    "prettier-plugin-tailwindcss": "^0.2.1",
+    "tailwindcss": "^3.2.4"
   }
 }

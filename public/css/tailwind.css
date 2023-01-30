@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    button {
+        @apply border bg-black px-4 py-2 text-base text-white;
+    }
+
+    ul.home > li {
+        @apply my-8 mx-16 font-sans text-4xl tracking-wider text-slate-500 transition-all duration-300;
+    }
+
+    ul.home > li > a {
+        @apply decoration-violet-500 decoration-4 underline-offset-2 hover:text-violet-700;
+    }
+
+    .disabled-page:hover {
+        cursor: not-allowed;
+    }
+
+    .disabled-page:hover {
+        @apply text-slate-500;
+    }
+}
