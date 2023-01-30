@@ -9,9 +9,9 @@ const router = express.Router();
  */
 router.get("/output/:mode", async (req, res) => {
     const mode = req.params.mode;
-    const sql = "select `測資手動NER` as json from NER_data";
-    const sql1 = "select `編號`, `語音辨識文字`, JSON_EXTRACT(`測資手動NER`, '$.tags') as tags from NER_data";
-    const sql2 = 'SELECT `編號` FROM `NER_data` WHERE `測資手動NER` is null order by `編號`;';
+    const sql = "select `測資手動NER` as json from ner_data_paragraph";
+    const sql1 = "select `編號`, `語音辨識文字`, JSON_EXTRACT(`測資手動NER`, '$.tags') as tags from ner_data_paragraph";
+    const sql2 = 'SELECT `編號` FROM `ner_data_paragraph` WHERE `測資手動NER` is null order by `編號`;';
     let resultA = await promisePool.query(sql)
         .then(([rows, fields]) => {
             return rows.map((_) => { return JSON.parse(_.json) });
@@ -66,7 +66,7 @@ router.get("/output/:mode", async (req, res) => {
  * 輸出 NER 種類
  */
 router.get("/ner/category", async (req, res) => {
-    const sql = "select * from NER_category";
+    const sql = "select * from ner_category";
     let result = await promisePool.query(sql)
     res.json(result[0]);
 });
@@ -76,7 +76,7 @@ router.get("/ner/category", async (req, res) => {
  */
 router.put('/ner/category', (req, res) => {
     let json = req.body;
-    let sql = `UPDATE NER_category SET Name = '${json.Name}', Tag = '${json.Tag}' WHERE ID = ${json.ID};`
+    let sql = `UPDATE ner_category SET Name = '${json.Name}', Tag = '${json.Tag}' WHERE ID = ${json.ID};`
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
     });
@@ -88,7 +88,7 @@ router.put('/ner/category', (req, res) => {
  */
 router.delete('/ner/category/:ID', (req, res) => {
     let ID = req.params.ID;
-    let sql = `DELETE FROM NER_category WHERE ID = ${ID}`
+    let sql = `DELETE FROM ner_category WHERE ID = ${ID}`
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
     });
@@ -100,7 +100,7 @@ router.delete('/ner/category/:ID', (req, res) => {
  */
 router.post('/ner/category', (req, res) => {
     let json = req.body;
-    let sql = `INSERT INTO NER_category (ID, Name, Tag) VALUES (NULL, '${json.Name}', '${json.Tag}');`
+    let sql = `INSERT INTO ner_category (ID, Name, Tag) VALUES (NULL, '${json.Name}', '${json.Tag}');`
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
     });
@@ -108,11 +108,34 @@ router.post('/ner/category', (req, res) => {
 }) 
 
 /**
+ * 輸出網站選項
+ */
+router.get('/ner/option',async (req, res) => {
+    const sql = "select * from ner_options";
+    let result = await promisePool.query(sql)
+    res.json(result[0]);
+})
+
+/**
+ * 更新網站選項
+ */
+router.put('/ner/option', (req, res) => {
+    const json = req.body;
+    const sql = `UPDATE ner_options SET option_value = '${json.value}' WHERE option_name = '${json.name}';`
+    pool.query(sql, (error, result, fields) => {
+        if (error) throw error;
+    });
+    res.json({
+        message: "更新成功"
+    });
+})
+
+/**
  * 使用者測資數目
  */
 router.get("/users/:userName", (req, res) => {
     let uname = req.params.userName;
-    let sql = `select * from ( select count(*) as "全部測資" from NER_data) a, ( select count(*) as "某人的測資" from NER_data where 你是誰 = "${uname}") b`;
+    let sql = `select * from ( select count(*) as "全部測資" from ner_data_paragraph) a, ( select count(*) as "某人的測資" from NER_data where 你是誰 = "${uname}") b`;
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
         res.json(result[0]);
@@ -125,7 +148,7 @@ router.get("/users/:userName", (req, res) => {
 router.post("/users/:userName", (req, res) => {
     let uname = req.params.userName;
     let results = req.body;
-    let sql = `INSERT INTO NER_data (你是誰, 測資文字, 語音辨識文字, 語音辨識注音, 語音檔路徑, 產生時間) VALUES ("${uname}", "${results.text}", "${results.transcript}", "${results.zhuyin}", "${results.filePath}", current_timestamp())`;
+    let sql = `INSERT INTO ner_data_paragraph (你是誰, 測資文字, 語音辨識文字, 語音辨識注音, 語音檔路徑, 產生時間) VALUES ("${uname}", "${results.text}", "${results.transcript}", "${results.zhuyin}", "${results.filePath}", current_timestamp())`;
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
     });
@@ -137,7 +160,7 @@ router.post("/users/:userName", (req, res) => {
  */
 router.get("/data/:no", (req, res) => {
     const no = req.params.no;
-    let sql = `select * from NER_data where 編號 = ${no}`
+    let sql = `select * from ner_data_paragraph where 編號 = ${no}`
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
         res.json(result[0]);
@@ -150,7 +173,7 @@ router.get("/data/:no", (req, res) => {
 router.put('/data', (req, res) => {
     let json = req.body;
     let json_string = JSON.stringify(json.json);
-    let sql = `UPDATE NER_data SET 測資手動NER = '${json_string}' WHERE 編號 = ${json.no};`
+    let sql = `UPDATE ner_data_paragraph SET 測資手動NER = '${json_string}' WHERE 編號 = ${json.no};`
     pool.query(sql, (error, result, fields) => {
         if (error) throw error;
     });

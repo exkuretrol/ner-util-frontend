@@ -17,6 +17,9 @@ head %}
     document.addEventListener("DOMContentLoaded", () => {
         $("#tabs").tabs();
 
+        /**
+         * 變更 ner 標籤
+         */
         function load_table() {
             $.ajax({
                 url: "/api/ner/category",
@@ -115,10 +118,10 @@ head %}
                 });
             }
         });
-    });
-</script>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
+
+        /**
+         * 輸出測資
+         */
         let url;
         $("#download-btn").attr("disabled", true);
         $("#download-btn").on("click", (e) => {
@@ -152,12 +155,52 @@ head %}
                     downloadLink.href = url;
                     downloadLink.style.display = "none";
                     if ($("#download-link").length > 0)
-                        $("#download-link").remove();
+                        $("#download-link").attr;
                     document.body.appendChild(downloadLink);
                     $("#download-btn").removeAttr("disabled");
                 },
             });
         });
+
+        /**
+         * 調整網站選項
+         */
+        function load_option() {
+            $.ajax({
+                url: "/api/ner/option",
+            }).then((options) => {
+                for (let option of options) {
+                    const opt = dash_underline_conv(option.option_name);
+                    const inputs = $(`#${opt} input`);
+                    for (let input of inputs) {
+                        if (option.option_value === input.value) {
+                            console.log($(input).prop("checked", true));
+                        }
+                    }
+                }
+            });
+            $("input[name='ner-data-type']").on("change", (e) => {
+                const el = e.target;
+                $.ajax({
+                    url: `/api/ner/option`,
+                    type: "put",
+                    data: JSON.stringify({
+                        name: dash_underline_conv($(el).attr("name")),
+                        value: $(el).val(),
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                }).then((res) => {
+                    $("#ner-data-type .respond-message").text(res.message);
+                });
+            });
+        }
+        load_option();
+
+        function dash_underline_conv(string) {
+            return string.includes("-")
+                ? string.replaceAll("-", "_")
+                : string.replaceAll("_", "-");
+        }
     });
 </script>
 {% endblock head %} {% block main %}
@@ -167,10 +210,10 @@ head %}
         <ul>
             <li><a href="#tabs-1">輸出測資</a></li>
             <li><a href="#tabs-2">變更 NER 標籤</a></li>
+            <li><a href="#tabs-3">調整網站選項</a></li>
         </ul>
     </div>
 
-    <!-- main -->
     <div class="w-auto">
         <div id="tabs-1">
             <label for="output-ner-data-to-json">輸出測資：</label>
@@ -212,6 +255,28 @@ head %}
                     />
                 </div>
                 <button id="create-tag">新增標籤</button>
+            </div>
+        </div>
+        <div id="tabs-3">
+            <div id="ner-data-type">
+                <fieldset id="ner">
+                    <legend>ner 資料類型</legend>
+                    <input
+                        type="radio"
+                        name="ner-data-type"
+                        id="data-type-1"
+                        value="paragraph"
+                    />
+                    <label for="data-type-1">短句</label>
+                    <input
+                        type="radio"
+                        name="ner-data-type"
+                        id="data-type-2"
+                        value="article"
+                    />
+                    <label for="data-type-2">文章</label>
+                    <div class="respond-message"></div>
+                </fieldset>
             </div>
         </div>
     </div>
