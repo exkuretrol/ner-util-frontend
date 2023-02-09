@@ -19,7 +19,19 @@
         cursor: not-allowed;
     }
 
-    .disabled-page:hover {
+    ul.home > li > a.disabled-page:hover {
         @apply text-slate-500;
+    }
+
+    .confirm-delete {
+        @apply bg-red-500;
+    }
+
+    .modifying {
+        @apply bg-emerald-300;
+    }
+
+    .selected {
+        @apply border border-black bg-white text-black;
     }
 }

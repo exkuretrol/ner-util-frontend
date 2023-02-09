@@ -1,15 +1,10 @@
 {% extends "base.twig" %} {% block title %}首頁{% endblock title %} {% block
 head %}
 {{ parent() }}
-<style type="text/tailwindcss">
-    @layer components {
-    }
-</style>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         $(".disabled-page").on("click", (e) => {
             if (e) e.preventDefault();
-
         });
     });
 </script>

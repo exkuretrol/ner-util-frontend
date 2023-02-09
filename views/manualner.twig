@@ -1,13 +1,6 @@
 {% extends "base.twig" %} {% block title %}手動 NER 輸入{% endblock title %} {%
 block head %}
 {{ parent() }}
-<style type="text/tailwindcss">
-    @layer components {
-        .selected {
-            @apply bg-white border-black text-black border;
-        }
-    }
-</style>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         let input_text_json = {};
@@ -29,7 +22,7 @@ block head %}
         }).then((res) => {
             let options = res.reverse().map((option) => {
                 return $(
-                    `<option value='${option.Tag}'>${option.Name}</option>'`
+                    `<option value='${option.category_tag}'>${option.category_name}</option>'`
                 );
             });
             $("#category").append(options);

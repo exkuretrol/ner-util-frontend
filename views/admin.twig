@@ -1,17 +1,6 @@
 {% extends "base.twig" %} {% block title %}管理頁面{% endblock title %} {% block
 head %}
 {{ parent() }}
-<style type="text/tailwindcss">
-    @layer components {
-        .confirm-delete {
-            @apply bg-red-500;
-        }
-
-        .modifying {
-            @apply bg-emerald-300;
-        }
-    }
-</style>
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
@@ -22,19 +11,24 @@ head %}
          */
         function load_table() {
             $.ajax({
-                url: "/api/ner/category",
+                url: "/api/ner/categoryAll",
             }).then((res) => {
                 res.map((option, i) => {
                     const row = `
-                    <tr id="${"cate" + option.ID}">
+                    <tr id="${"cate" + option.category_id}">
                         <td>
-                            <input class="name" type="text" value="${
-                                option.Name
+                            <input class="category-name" type="text" value="${
+                                option.category_name
                             }" disabled>
                         </td>
                         <td>
-                            <input class="tag" type="text" value="${
-                                option.Tag
+                            <input class="category-tag" type="text" value="${
+                                option.category_tag
+                            }" disabled>
+                        </td>
+                        <td>
+                            <input class="category-group" type="text" value="${
+                                option.category_group
                             }" disabled>
                         </td>
                         <td class="modify">✏️</td>
@@ -42,48 +36,51 @@ head %}
                     </tr>
                     `;
                     $("#category-table > tbody").append(row);
-                    $(`#cate${option.ID} .delete`).on("click", (e) => {
+
+                    $(`#cate${option.category_id} .delete`).on("click", (e) => {
                         if (
-                            $(`#cate${option.ID} .delete`).hasClass(
+                            $(`#cate${option.category_id} .delete`).hasClass(
                                 "confirm-delete"
                             )
                         ) {
-                            $(`#cate${option.ID}`).remove();
+                            $(`#cate${option.category_id}`).remove();
                             $.ajax({
-                                url: `/api/ner/category/${option.ID}`,
+                                url: `/api/ner/category/${option.category_id}`,
                                 type: "delete",
                                 contentType: "application/json; charset=utf-8",
                             });
                         } else {
-                            $(`#cate${option.ID} .delete`).addClass(
+                            $(`#cate${option.category_id} .delete`).addClass(
                                 "confirm-delete"
                             );
                         }
                     });
 
-                    $(`#cate${option.ID} .modify`).on("click", (e) => {
-                        if ($(`#cate${option.ID} .modify`).text() == "✏️") {
-                            $(`#cate${option.ID} input`).removeAttr(
-                                "disabled",
-                                false
-                            );
-                            $(`#cate${option.ID} .modify`).addClass(
-                                "modifying"
-                            );
-
-                            $(`#cate${option.ID} .modify`).text("👌");
-                            // console.log("can modify");
+                    const modify_emoji = $(
+                        `#cate${option.category_id} .modify`
+                    );
+                    const modify_inputs = $(`#cate${option.category_id} input`);
+                    modify_emoji.on("click", (e) => {
+                        if (modify_emoji.text() == "✏️") {
+                            modify_inputs.removeAttr("disabled", false);
+                            modify_emoji.addClass("modifying");
+                            modify_emoji.text("👌");
                         } else {
-                            $(`#cate${option.ID} input`).attr("disabled", true);
-                            $(`#cate${option.ID} .modify`).removeClass(
-                                "modifying"
-                            );
-                            $(`#cate${option.ID} .modify`).text("✏️");
+                            modify_inputs.attr("disabled", true);
+                            modify_emoji.removeClass("modifying");
+                            modify_emoji.text("✏️");
 
                             const data = {
-                                ID: option.ID,
-                                Name: $(`#cate${option.ID} input.name`).val(),
-                                Tag: $(`#cate${option.ID} input.tag`).val(),
+                                category_id: option.category_id,
+                                category_name: $(
+                                    `#cate${option.category_id} input.category-name`
+                                ).val(),
+                                category_tag: $(
+                                    `#cate${option.category_id} input.category-tag`
+                                ).val(),
+                                category_group: $(
+                                    `#cate${option.category_id} input.category-group`
+                                ).val(),
                             };
 
                             $.ajax({
@@ -92,7 +89,6 @@ head %}
                                 data: JSON.stringify(data),
                                 contentType: "application/json; charset=utf-8",
                             });
-                            // console.log("cann't modify");
                         }
                     });
                 });
@@ -101,17 +97,28 @@ head %}
         load_table();
 
         $("#create-tag").on("click", (e) => {
-            const name = $("#new-category-name").val();
-            const tag = $("#new-category-tag").val();
-            if (name !== "" && tag !== "") {
+            console.log(e.target);
+            const category_name = $("#new-category-name").val();
+            const category_tag = $("#new-category-tag").val();
+            const category_group = $("#new-category-group").val();
+            if (
+                category_name !== "" &&
+                category_tag !== "" &&
+                category_group !== ""
+            ) {
                 $.ajax({
                     url: `/api/ner/category`,
                     type: "post",
-                    data: JSON.stringify({ Name: name, Tag: tag }),
+                    data: JSON.stringify({
+                        category_name: category_name,
+                        category_tag: category_tag,
+                        category_group: category_group,
+                    }),
                     contentType: "application/json; charset=utf-8",
                     success: () => {
                         $("#new-category-name").val("");
                         $("#new-category-tag").val("");
+                        // $("#new-category-group").val("");
                         $("#category-table > tbody").children().remove();
                         load_table();
                     },
@@ -246,12 +253,17 @@ head %}
                     <input
                         id="new-category-name"
                         type="text"
-                        placeholder="標籤名稱"
+                        placeholder="名稱"
                     />
                     <input
                         id="new-category-tag"
                         type="text"
-                        placeholder="英文標籤"
+                        placeholder="標籤"
+                    />
+                    <input
+                        id="new-category-group"
+                        type="text"
+                        placeholder="群組"
                     />
                 </div>
                 <button id="create-tag">新增標籤</button>
